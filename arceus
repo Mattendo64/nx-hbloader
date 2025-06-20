@@ -1,46 +1,59 @@
 import os
 import subprocess
 
-def nsp_to_cxi(nsp_path, output_dir, title_key):
+
+def nsp_to_cxi(NSP_FILE, OUTPUT_FOLDER, TITLE_KEY):
+    """
+    Converts NSP file to CXI format using hactool.
+
+    Parameters:
+    NSP_FILE (str): Path to the NSP file.
+    OUTPUT_FOLDER (str): Directory where extracted files will be saved.
+    TITLE_KEY (str): Title key used for decryption.
+    """
     # Create output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Step 1: Extract NSP contents
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
     print("Extracting NSP...")
-    subprocess.run([
-        "hactool", "-x",
-        "--titlekey", title_key,
-        "--outdir", output_dir,
-        nsp_path
-    ], check=True)
-    
+    subprocess.run(
+        [
+            "hactool",
+            "-x",
+            "--titlekey",
+            TITLE_KEY,
+            "--outdir",
+            OUTPUT_FOLDER,
+            NSP_FILE,
+        ],
+        check=True,
+    )
+
     # Step 2: Find the main NCA (assuming the largest or a specific one)
-    nca_files = [f for f in os.listdir(output_dir) if f.endswith(".nca")]
+    nca_files = [f for f in os.listdir(OUTPUT_FOLDER) if f.endswith(".nca")]
     if not nca_files:
         print("No NCA files found.")
         return
-    
+
     # For simplicity, pick the first NCA (or add logic to select the main one)
-    nca_path = os.path.join(output_dir, nca_files[0])
+    nca_path = os.path.join(OUTPUT_FOLDER, nca_files[0])
     print(f"Found NCA: {nca_path}")
-    
+
     # Step 3: Extract the CXI from the NCA
     print("Extracting CXI from NCA...")
-    subprocess.run([
-        "hactool", "--section=0",
-        "--outdir", output_dir,
-        nca_path
-    ], check=True)
-    
+    subprocess.run(
+        ["hactool", "--section=0", "--outdir", OUTPUT_FOLDER, nca_path], check=True
+    )
+
     # The CXI should now be in the output directory
-    for file in os.listdir(output_dir):
+    for file in os.listdir(OUTPUT_FOLDER):
         if file.endswith(".cxi"):
-            print(f"CXI extracted: {os.path.join(output_dir, file)}")
-            return os.path.join(output_dir, file)
+            print(f"CXI extracted: {os.path.join(OUTPUT_FOLDER, file)}")
+            return os.path.join(OUTPUT_FOLDER, file)
+
 
 # Usage example:
 if __name__ == "__main__":
-    nsp_file = "your_game.nsp"
-    output_folder = "extracted"
-    title_key = "YOUR_TITLE_KEY"  # Replace with your actual key
-    nsp_to_cxi(nsp_file, output_folder, title_key)
+    NSP_FILE = r"C:\Emulation\roms\switch\Pokemon Legends - Arceus\data\games\Pokemon.nsp"
+    OUTPUT_FOLDER = "extracted"
+    TITLE_KEY = "YOUR_TITLE_KEY"  # Replace with your actual key
+    nsp_to_cxi(NSP_FILE, OUTPUT_FOLDER, TITLE_KEY)
